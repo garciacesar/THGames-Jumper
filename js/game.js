@@ -27,20 +27,20 @@ var floor={
 jumper = {
 	x: canvasWidth/2 - 25,
 	y: canvasHeight - 50,
-	jumperHeight: 70,
-	jumperWidth: 50,
-	color: "#FF4E4E",
+	altura: 70,
+	largura: 50,
+	cor: "#FF4E4E",
 	gravity: .9,
-	velocity: 0,
-	force: 15,
+	velocidade: 0,
+	forcaDoPulo: 15,
  
 	jump: function(){
-		this.velocity =- this.force;
+		this.velocidade =- this.forcaDoPulo;
 	},
  
 	update: function(){
-		this.velocity += this.gravity;
-		this.y += this.velocity;
+		this.velocidade += this.gravity;
+		this.y += this.velocidade;
 			
 		//COLISÃO COM O CHÃO 
 		if(this.y > floor.y - this.altura){
@@ -49,8 +49,8 @@ jumper = {
 	},
  
 	render:function(){
-		ctx.fillStyle = this.color;
-	 	ctx.fillRect(this.x, this.y, this.jumperWidth, this.jumperHeight);
+		ctx.fillStyle = this.cor;
+	 	ctx.fillRect(this.x, this.y, this.largura, this.altura);
 	}
 };
  
@@ -67,7 +67,15 @@ function game(){
 	canvas.width = canvasWidth;
 	//define a altura do canvas
 	canvas.height = canvasHeight;
- 
+	//Stilo do canvas
+ 	canvas.style.border = "1px solid #000";
+ 	canvas.style.top = "0px";
+ 	canvas.style.bottom = "0px";
+ 	canvas.style.left = "0px";
+ 	canvas.style.right = "0px";
+ 	canvas.style.margin = "auto";
+ 	canvas.style.position = "absolute";
+
  	// pegar o contexto 2D para o canvas, isso quer dizer que tudo quer for renderizado será do contexto 2D 
 	ctx = canvas.getContext("2d");
  
