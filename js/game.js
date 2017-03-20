@@ -1,122 +1,134 @@
-// pega a largura total da tela
-canvasWidth = window.innerHeight;
-// pega a altura total da tela 
-canvasHeight = window.innerWidth;
- 
-//gera a tela do iphone para browsers
-if (canvasWidth >= 375){
-	canvasWidth = 375;
-	canvasHeight = 660;
-}
+var canvas,
+    ctx,
+    W               	= 340,
+    H               	= 600,
+    platformLvl 	= 0;
 
-//VARIÁVEIS GLOBAIS DO JOGO 
-var canvas, ctx, canvasHeight, canvasWidth, frame = 0;
- 
-// OBJETOS DO JOGO 
-var floor={
-	y:canvasHeight - 50,
-	floorHeight: 50,
-	color:"green",
- 
-	render: function(){
-	 	ctx.fillStyle = this.color;
-	 	ctx.fillRect(0, this.y, canvasWidth, this.floorHeight);
-	 }
-},
- 
-jumper = {
-	x: canvasWidth/2 - 25,
-	y: canvasHeight - 50,
-	altura: 70,
-	largura: 50,
-	cor: "#FF4E4E",
-	gravity: .9,
-	velocidade: 0,
-	forcaDoPulo: 15,
- 
-	jump: function(){
-		this.velocidade =- this.forcaDoPulo;
-	},
- 
+
+var jumper = {
+	x: W / 2 - 25, 
+	y: H - 70,
+	w: 50,
+	h: 70,
+	gravity: 0.9,
+    velocity: 0,
+    jumpPower: 16,
+    maxJumps: 0,
+	floorLimit: H,
+	actPlatform: -1,
 	update: function(){
-		this.velocidade += this.gravity;
-		this.y += this.velocidade;
-			
-		//COLISÃO COM O CHÃO 
-		if(this.y > floor.y - this.altura){
-			this.y = floor.y - this.altura;
+		this.velocity += this.gravity;
+		this.y += this.velocity;
+		if(this.y > this.floorLimit - this.h){
+		    this.y = this.floorLimit - this.h; 
+		    this.maxJumps = 0;
 		}
 	},
- 
-	render:function(){
-		ctx.fillStyle = this.cor;
-	 	ctx.fillRect(this.x, this.y, this.largura, this.altura);
+	render: function(){
+		ctx.fillStyle = "grey";
+		ctx.fillRect(this.x, this.y, this.w, this.h);
+	},
+	jump: function(){
+		if(this.maxJumps == 0){
+		    this.velocity = - this.jumpPower;
+		}
 	}
-};
- 
-// Irá contar o cliks e fazer o personagem pular
-function click(e){
+}
+
+var platform = [];
+function insertPlatforms(x, y, w, h){
+	var minPlatforms = (H / 120) + 1;
+	for(i = 0 ; i < minPlatforms ; i++){
+		platform.push({
+			x: x - w/2,
+			oldX: ((x - w/2) - 5) + Math.floor(10 * Math.random()),
+			velX: 0,
+			y: y - (i * 120),
+			oldY: 0,
+			w: w,
+			h: h,
+			st: 0,
+			id: i,
+			update: function(){
+				this.velX = (this.x - this.oldX);
+				this.oldX = this.x;
+				this.x += this.velX;
+				if(this.x + this.w > W - 20){
+					this.oldX = this.x + this.velX;
+				}else if(this.x <= 20){
+					this.oldX = this.x + this.velX;
+				}
+			},
+			render: function(){
+				ctx.fillStyle = "black";
+				ctx.fillRect(this.x, this.y, this.w, this.h);
+			}
+		});
+	}
+}
+
+//Recupera evento de clique do mouse
+function mouseDown(e){
 	jumper.jump();
+	jumper.maxJumps = 1;
 }
 
-// função principal onde será chamada as outras funções (contrutor)
-function game(){
-	// criação de um novo elemento do tipo canvas, é como se eu escrevesse a tag canvas no html
-	canvas = document.createElement("canvas");
-	//define a largura do canvas 
-	canvas.width = canvasWidth;
-	//define a altura do canvas
-	canvas.height = canvasHeight;
-	//Stilo do canvas
- 	canvas.style.border = "1px solid #000";
- 	canvas.style.top = "0px";
- 	canvas.style.bottom = "0px";
- 	canvas.style.left = "0px";
- 	canvas.style.right = "0px";
- 	canvas.style.margin = "auto";
- 	canvas.style.position = "absolute";
-
- 	// pegar o contexto 2D para o canvas, isso quer dizer que tudo quer for renderizado será do contexto 2D 
-	ctx = canvas.getContext("2d");
- 
-	// adiciona o canvas ao nosso documento HTML 
-	document.body.appendChild(canvas);
- 
-	// adiciona o evento de click, toda vez que alguém cliar na pagina será executado a função "click" que criamos anteriormente, o evento será pasado por parametro 
-	document.addEventListener("mousedown", click);
- 
-	//chama a função loop
-	loop();
- 
+function keyDown(e){
+	if(e.keyCode == 32){
+		jumper.jump();
+		jumper.maxJumps = 1;
+	}
 }
 
-//responsável por fazer a 
-function loop() {
-	//chama a função update
-	update();
-	//chama a função render
-	render();
- 
-	// a cada segundo a função loop sera chamada
-	window.requestAnimationFrame(loop);
-}
-
+//Atualizações gerais do jogo
 function update(){
-	//incrementa mais 1 ao nosso frame
-	frame ++;
+	for(i = 0 ; i <= platform.length - 1 ; i++){
+		platform[i].update();
+		if(jumper.y + jumper.h < platform[i].y && jumper.x >= platform[i].x - jumper.w / 3 && jumper.x + jumper.w / 3 <= platform[i].x + platform[i].w && platform[i].st == 0){
+			jumper.floorLimit = platform[i].y;
+			jumper.actPlatform = i;
+			platform[i].st = 1;
+		}
+		if(jumper.y + jumper.h == platform[i].y){
+			jumper.x += platform[i].velX;
+		}
+		if(jumper.actPlatform == platform[i].id && platform[i].st == 1 && jumper.y + jumper.h == platform[i].y && (jumper.x + jumper.w / 3 < platform[i].x || jumper.x + jumper.w / 3 > platform[i].x + platform[i].w)){
+			jumper.floorLimit = H;
+		}
+	}
 	jumper.update();
 }
 
+//Renderização dos elementos do jogo
 function render(){
-	// define a cor do retangulo que queremos dezenhar 
-	ctx.fillStyle = "#50BEff";
-	// render um retangulo da x = 0 até o tamanho total da largura
-	//e de y =  0 até o tamanho total da altura
-	ctx.fillRect(0,0, canvasWidth, canvasHeight)
- 
-	floor.render();
+	ctx.clearRect(0, 0, W, H);
+	for(i = 0 ; i < platform.length ; i++){
+		platform[i].render();
+	}
 	jumper.render();
 }
- 
-// incia o jogo 
-game();
+
+//Cria o loop do jogo
+function loop(){
+    update();
+    render();
+	window.requestAnimationFrame(loop);
+}
+
+//Função principal - e definições gerais do canvas e contexto
+function app(){
+    canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = H;
+    canvas.style.border = "1px solid #F4F4F4";
+    ctx = canvas.getContext('2d');
+    document.body.appendChild(canvas);
+    window.canvas.addEventListener('mousedown', mouseDown);
+	document.body.addEventListener('keydown', keyDown);
+	ctx.translate(0.5, 0.5);
+	insertPlatforms(W/2, H - 120, 100, 10);
+	loop();
+}
+
+
+app();
