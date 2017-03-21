@@ -4,6 +4,7 @@ var canvas,
     H               	= 600,
     platformLvl 	= 0;
 
+<<<<<<< Updated upstream
 
 var jumper = {
 	x: W / 2 - 25, 
@@ -22,6 +23,46 @@ var jumper = {
 		if(this.y > this.floorLimit - this.h){
 		    this.y = this.floorLimit - this.h; 
 		    this.maxJumps = 0;
+=======
+//Variaveis globais 
+var canvas, ctx, canvasHeight, canvasWidth, frame = 0;
+ 
+// Objetos
+var floor = {
+	y:canvasHeight - 50,
+	floorHeight: 50,
+	color:"green",
+ 
+	render: function(){
+		//Cor do objeto floor
+	 	ctx.fillStyle = this.color;
+	 	//Desenha objeto floor
+	 	ctx.fillRect(0, this.y, canvasWidth, this.floorHeight);
+	 }
+},
+ 
+jumper = {
+	x: canvasWidth/2 - 25,
+	y: canvasHeight - 50,
+	altura: 70,
+	largura: 50,
+	cor: "#FF4E4E",
+	gravity: .9,
+	velocidade: 0,
+	forcaDoPulo: 15,
+ 
+	jump: function(){
+		this.velocidade =- this.forcaDoPulo;
+	},
+ 
+	update: function(){
+		this.velocidade += this.gravity;
+		this.y += this.velocidade;
+			
+		//Colisão com chão
+		if(this.y > floor.y - this.altura){
+			this.y = floor.y - this.altura;
+>>>>>>> Stashed changes
 		}
 	},
 	render: function(){
@@ -67,6 +108,7 @@ function insertPlatforms(x, y, w, h){
 	}
 }
 
+<<<<<<< Updated upstream
 //Recupera evento de clique do mouse
 function mouseDown(e){
 	jumper.jump();
@@ -78,6 +120,31 @@ function keyDown(e){
 		jumper.jump();
 		jumper.maxJumps = 1;
 	}
+=======
+ 	// 2D para o canvas
+	ctx = canvas.getContext("2d");
+ 
+	// adiciona o canvas ao HTML 
+	document.body.appendChild(canvas);
+ 
+	// adiciona o evento de mousedown
+	document.addEventListener("mousedown", click);
+ 
+	//chama a função loop
+	loop();
+ 
+}
+
+//funcao de loop
+function loop(){
+	//chama a função update
+	update();
+	//chama a função render
+	render();
+ 
+	// a cada segundo a função loop sera chamada
+	window.requestAnimationFrame(loop);
+>>>>>>> Stashed changes
 }
 
 //Atualizações gerais do jogo
